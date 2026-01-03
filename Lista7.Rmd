@@ -1,0 +1,29 @@
+---
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+Seja $Y_i$ para $i = 1, \cdots , n$ iid com pdf $f(y) = \theta ky^{k-1} exp(-\theta y^k), y \geq 0$. Encontre a estimativa de máxima verossimilhança de k usando as seguintes observações: $yi:4.2; 0.7; 2.5; 1.9; 7.9.$
+
+
+```{r t_dist_prob}
+y <- c(4.2, 0.7, 2.5, 1.9, 7.9)
+n <- length(y)
+
+profile_score_k <- function(k) {
+  sum_y_k <- sum(y^k)
+  sum_y_k_log_y <- sum(y^k * log(y))
+  
+  term1 <- n / k
+  term2 <- sum(log(y))
+  term3 <- n * sum_y_k_log_y / sum_y_k
+  
+  return(term1 + term2 - term3)
+}
+
+mle_k <- uniroot(profile_score_k, interval = c(1, 2))
+
+print(mle_k$root)
+```

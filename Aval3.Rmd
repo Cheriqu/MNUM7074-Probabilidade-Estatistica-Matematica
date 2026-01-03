@@ -1,0 +1,109 @@
+---
+lang: "pt-br"
+output:
+  pdf_document:
+    extra_dependencies: float
+    latex_engine: xelatex
+  word_document: default
+  html_document:
+    df_print: paged
+header-includes:
+- \usepackage{cancel}
+- \usepackage{fancyhdr}
+- \usepackage{pdfpages}
+- \pagestyle{fancy}
+- \fancyhf{}
+- \renewcommand{\headrulewidth}{0pt}
+- \fancyfoot[L]{\includegraphics[width=2cm]{logo.png}}
+- \fancyfoot[C]{}
+- \fancyfoot[R]{Página \thepage}
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r, echo=FALSE, out.width="110%", fig.align='center'}
+knitr::include_graphics("aval12.png")
+```
+
+```{r emv}
+# Dados
+y <- c(1.1, 1.9, 2.1, 3, 5)
+n <- length(y)
+# Função de Menos Log-Verossimilhança (para minimizar)
+neg_log_lik <- function(theta) {
+  c_par <- theta[1]
+  d_par <- theta[2]
+  # Restrição de parâmetros positivos
+  if(c_par <= 0 || d_par <= 0) return(Inf)
+  # Log-verossimilhança
+  logL <- n * log(c_par) + n * log(d_par) + 
+          (c_par - 1) * sum(log(y)) - 
+          (d_par + 1) * sum(log(1 + y^c_par))
+  return(-logL)}
+# Otimização Numérica (BFGS)
+chute_inicial <- c(1, 1)
+otimizacao <- optim(par = chute_inicial, fn = neg_log_lik, hessian = TRUE)
+est_c <- otimizacao$par[1]
+est_d <- otimizacao$par[2]
+cat("Estimativas de Máxima Verossimilhança:\nc_chapeu =",
+    round(est_c, 4), "\nd_chapeu =", round(est_d, 4))
+```
+
+```{r, echo=FALSE, out.width="110%", fig.align='center'}
+knitr::include_graphics("a.png")
+```
+
+```{r info_matrix}
+# A função optim já calculou a Hessiana numérica
+hessiana <- otimizacao$hessian
+info_observada <- hessiana
+cat("Matriz de Informação Observada J(theta_chapeu):")
+print(info_observada)
+# Inversa da Informação (Matriz de Covariância Assintótica)
+var_cov <- solve(info_observada)
+var_cov
+```
+
+```{r 2, echo=FALSE, out.width="110%", fig.align='center'}
+knitr::include_graphics("aval456.png")
+```
+
+```{r ci}
+# Erros padrão (raiz quadrada da diagonal da matriz de covariância)
+se <- sqrt(diag(var_cov))
+se_c <- se[1]
+se_d <- se[2]
+# Nível de confiança 95%
+alpha <- 0.05
+z_crit <- qnorm(1 - alpha/2)
+# Intervalos
+ci_c <- c(est_c - z_crit * se_c, est_c + z_crit * se_c)
+ci_d <- c(est_d - z_crit * se_d, est_d + z_crit * se_d)
+cat("Intervalo de Confiança 95% para c: [", round(ci_c[1], 4), ";", round(ci_c[2], 4),
+    "]\nIntervalo de Confiança 95% para d: [", round(ci_d[1], 4), ";", round(ci_d[2], 4),"]")
+```
+
+**Interpretação:** Com 95% de confiança, acreditamos que o verdadeiro valor do parâmetro $c$ está contido no intervalo calculado acima, e o verdadeiro valor de $d$ está no seu respectivo intervalo. Como a amostra é pequena ($n=5$), a aproximação normal pode não ser perfeita e os intervalos tendem a ser largos.
+
+```{r 3, echo=FALSE, out.width="110%", fig.align='center'}
+knitr::include_graphics("aval7.png")
+```
+
+```{r hipotesis}
+# Teste de Wald
+c0 <- 1
+W <- (est_c - c0) / se_c
+p_valor <- 2 * (1 - pnorm(abs(W))) # Teste bilateral
+cat("Estatística de Teste W:", round(W, 4),
+    "\nP-valor:", round(p_valor, 4), "\n")
+# Conclusão
+if(p_valor < 0.05) {
+  cat("Conclusão: Rejeita-se H0 ao nível de 5%. Há evidências de que c é diferente de 1.")} else {
+  cat("Conclusão: Não se rejeita H0 ao nível de 5%.
+Não há evidências suficientes para afirmar que c é diferente de 1.")}
+```

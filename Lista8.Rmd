@@ -1,0 +1,43 @@
+---
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+9. Seja $X_i$ para $i = 1, \dots, n$ iid com pdf
+$$ f(x;\theta) = \pi^{-1}\{1 + (x - \theta)^2\}^{-1} :\quad -\infty < x < \infty. $$
+Desenhe o gráfico da verossimilhança, log-verossimilhança, verossimilhança relativa e deviance no caso $n = 5$ com as seguintes observações $x_i : 4.2; 0.7; 2.5; 1.9; 7.9$. Encontre o limite inferior de Cramér-Rao.
+
+
+```{r t_dist_prob}
+x <- c(4.2, 0.7, 2.5, 1.9, 7.9)
+log_like <- function(theta) {
+  sum(dcauchy(x, location = theta, scale = 1, log = TRUE))}
+
+mle_fit <- optimize(log_like, interval = c(min(x) - 1, max(x) + 1), maximum = TRUE)
+theta_hat <- mle_fit$maximum
+max_ll <- mle_fit$objective
+
+like <- function(theta) {
+  exp(log_like(theta))}
+rel_like <- function(theta) {
+  exp(log_like(theta) - max_ll)}
+deviance <- function(theta) {
+  -2 * (log_like(theta) - max_ll)}
+theta_range <- seq(theta_hat - 5, theta_hat + 5, length.out = 500)
+
+par(mfrow = c(2, 2))
+plot(theta_range, sapply(theta_range, like), type = "l",
+     xlab = expression(theta), ylab = "Verossimilhança")
+abline(v = theta_hat, col = "red", lty = 2)
+plot(theta_range, sapply(theta_range, log_like), type = "l",
+     xlab = expression(theta), ylab = "Log-Verossimilhança")
+abline(v = theta_hat, col = "red", lty = 2)
+plot(theta_range, sapply(theta_range, rel_like), type = "l",
+     xlab = expression(theta), ylab = "Verossimilhança Relativa")
+abline(v = theta_hat, col = "red", lty = 2)
+plot(theta_range, sapply(theta_range, deviance), type = "l",
+     xlab = expression(theta), ylab = "Deviance")
+abline(v = theta_hat, col = "red", lty = 2)
+```

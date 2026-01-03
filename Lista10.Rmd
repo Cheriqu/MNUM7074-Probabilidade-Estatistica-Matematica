@@ -1,0 +1,182 @@
+---
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+# Pacotes necessários
+if(!require(tweedie)) install.packages("tweedie")
+if(!require(statmod)) install.packages("statmod")
+library(tweedie)
+library(statmod)
+```
+
+
+### a) Distribuição Poisson ($\lambda$)
+
+**Objetivo:** Testar $H_0: \lambda = \lambda_0$ contra $H_1: \lambda \neq \lambda_0$.
+
+Utilizaremos o **Teste Escore** (ou aproximação Normal baseada no Teorema Central do Limite). Sob $H_0$, a variância é $\lambda_0$.
+A estatística de teste é:
+$$ Z = \frac{\hat{\lambda} - \lambda_0}{\sqrt{\frac{\lambda_0}{n}}} = \frac{\bar{X} - \lambda_0}{\sqrt{\frac{\lambda_0}{n}}} \sim N(0, 1) \quad (\text{assintoticamente sob } H_0) $$
+
+-----
+
+### b) Distribuição Binomial ($n, p$)
+
+**Objetivo:** Testar $H_0: p = 0.5$ contra $H_1: p \neq 0.5$.
+
+Utilizaremos a aproximação Normal para a proporção (Teste de Wald/Escore sob $H_0$). A variância sob $H_0$ é $p_0(1-p_0)/n$.
+$$ Z = \frac{\hat{p} - 0.5}{\sqrt{\frac{0.5(1-0.5)}{n}}} = \frac{\hat{p} - 0.5}{\sqrt{\frac{0.25}{n}}} \sim N(0, 1) $$
+
+-----
+
+### c) Distribuição Exponencial ($\lambda$)
+
+**Objetivo:** Teste da Razão de Verossimilhança (TRV) para $H_0: \lambda = \lambda_0$.
+
+A função de verossimilhança é $L(\lambda) = \lambda^n e^{-\lambda \sum x_i}$.
+O EMV irrestrito é $\hat{\lambda} = 1/\bar{x}$. O valor sob $H_0$ é $\lambda_0$.
+A estatística $\Lambda$ é:
+$$ \Lambda = \frac{L(\lambda_0)}{L(\hat{\lambda})} = \frac{\lambda_0^n e^{-\lambda_0 n \bar{x}}}{\hat{\lambda}^n e^{-\hat{\lambda} n \bar{x}}} = \left(\frac{\lambda_0}{\hat{\lambda}}\right)^n \exp\left(-n \bar{x} (\lambda_0 - \hat{\lambda})\right) $$
+A estatística de teste (deviance) é:
+$$ TRV = -2 \ln \Lambda = 2n \left[ \frac{\lambda_0}{\hat{\lambda}} - 1 - \ln\left(\frac{\lambda_0}{\hat{\lambda}}\right) \right] \sim \chi^2_1 $$
+*(Nota: usando a relação $\hat{\lambda} = 1/\bar{x}$ para simplificar a exponencial)*.
+
+-----
+
+### d) Distribuição Normal ($\mu, \sigma^2$)
+
+**Objetivo:** Teste Escore para $H_0: \sigma = 1$ (ou $\sigma^2=1$) contra $H_1: \sigma \neq 1$. Assumindo $\mu$ desconhecido (estimado por $\bar{x}$).
+
+Log-verossimilhança perfilada para $\sigma^2$:
+$$ l(\sigma^2) \propto -\frac{n}{2}\ln(\sigma^2) - \frac{\sum(x_i - \bar{x})^2}{2\sigma^2} $$
+Vetor Escore $U(\sigma^2) = \frac{\partial l}{\partial \sigma^2} = -\frac{n}{2\sigma^2} + \frac{\sum(x_i - \bar{x})^2}{2(\sigma^2)^2}$.
+Informação de Fisher $I(\sigma^2) = \frac{n}{2\sigma^4}$.
+Avaliado em $\sigma^2 = 1$:
+$$ S_{score} = \frac{[U(1)]^2}{I(1)} = \frac{\left(-\frac{n}{2} + \frac{\sum(x_i - \bar{x})^2}{2}\right)^2}{n/2} = \frac{\left(\sum(x_i - \bar{x})^2 - n\right)^2}{2n} \sim \chi^2_1 $$
+
+-----
+
+### e) Distribuição Tweedie ($\mu, \phi, p$)
+
+**Objetivo:** Teste de Wald para $H_0: \phi = 1$ contra $\phi \neq 1$. ($p$ conhecido).
+
+A estatística de Wald baseia-se na distância entre a estimativa e o valor hipotético, ponderada pela variância do estimador.
+$$ W = \frac{(\hat{\phi} - 1)^2}{Var(\hat{\phi})} \sim \chi^2_1 $$
+Onde $\hat{\phi}$ é usualmente estimado pelo Chi-quadrado de Pearson dividido pelos graus de liberdade ($n-1$) ou via EMV. A variância assintótica de $\hat{\phi}$ para a família exponencial de dispersão é aproximadamente $2\phi^2/n$.
+Sob $H_0 (\phi=1)$:
+$$ W = \frac{(\hat{\phi} - 1)^2}{2/n} = \frac{n(\hat{\phi}-1)^2}{2} $$
+
+-----
+
+```{r simulacao}
+set.seed(2025)
+
+# a) Poisson: Teste de Lambda = lambda0
+n <- 100
+lambda_0 <- 5
+# Simulação (H0 verdadeira)
+dados_pois <- rpois(n, lambda = lambda_0)
+lambda_hat <- mean(dados_pois)
+# Estatística Z
+z_stat <- (lambda_hat - lambda_0) / sqrt(lambda_0/n)
+p_val <- 2 * (1 - pnorm(abs(z_stat)))
+cat("a) Poisson\nEMV:", lambda_hat, "| Z-stat:", z_stat, "| p-valor:", p_val)
+
+
+# b) Binomial: Teste p = 0.5 e Poder
+n_bin <- 50 # tamanho da amostra (ensaios)
+p_0 <- 0.5
+# Simulação (H0 verdadeira)
+x_bin <- rbinom(1, n_bin, p_0) # número de sucessos
+p_hat <- x_bin / n_bin
+# Estatística Z
+z_bin <- (p_hat - p_0) / sqrt((p_0 * (1-p_0)) / n_bin)
+p_val_bin <- 2 * (1 - pnorm(abs(z_bin)))
+# Cálculo do Poder para p = 0.8 (Simulação)
+n_sim <- 1000
+p_alt <- 0.8
+rejeicoes <- 0
+for(i in 1:n_sim){
+  x_sim <- rbinom(1, n_bin, p_alt)
+  p_sim <- x_sim / n_bin
+  z_sim <- (p_sim - p_0) / sqrt((p_0 * (1-p_0)) / n_bin)
+  if(abs(z_sim) > 1.96) rejeicoes <- rejeicoes + 1}
+poder <- rejeicoes / n_sim
+cat("b) Binomial\np-chapéu:", p_hat, "| Z-stat:", z_bin, "| p-valor:", p_val_bin,
+    "\nPoder do teste para p=0.8 (via simulação):", poder)
+
+
+# c) Exponencial: Teste da Razão de Verossimilhança (TRV)
+lambda_0_exp <- 2
+dados_exp <- rexp(n, rate = lambda_0_exp) # H0 verdadeira
+lambda_hat_exp <- 1/mean(dados_exp)
+# Estatística TRV (Deviance)
+# TRV = 2n [ (lambda0/lambda_hat) - 1 - log(lambda0/lambda_hat) ]
+ratio <- lambda_0_exp / lambda_hat_exp
+trv_stat <- 2 * n * (ratio - 1 - log(ratio))
+p_val_trv <- 1 - pchisq(trv_stat, df = 1)
+cat("c) Exponencial (TRV)\nEMV:", lambda_hat_exp, "| TRV-stat:", trv_stat,
+    "| p-valor:", p_val_trv)
+
+
+# d) Normal: Teste Escore para Sigma = 1
+# Função para realizar o teste escore
+teste_escore_sigma <- function(dados, sigma0 = 1){
+  n <- length(dados)
+  mu_hat <- mean(dados)
+  S2_biased <- sum((dados - mu_hat)^2) # Numerador da variância
+  # Estatística derivada
+  score_stat <- (S2_biased - n*sigma0^2)^2 / (2 * n * sigma0^4)
+  p_val <- 1 - pchisq(score_stat, df = 1)
+  return(p_val)}
+# Estudo de simulação (Verificar Taxa de Erro Tipo I)
+rejeicoes_norm <- 0   # Erro Tipo I
+nao_rejeicoes_alt <- 0 # Erro Tipo II
+for(i in 1:n_sim){
+  # --- Erro Tipo I ---
+  dados_norm <- rnorm(n, mean = 10, sd = 1) # H0 verdadeira
+  if(teste_escore_sigma(dados_norm) < 0.05){
+    rejeicoes_norm <- rejeicoes_norm + 1}
+  # --- Erro Tipo II ---
+  dados_alt <- rnorm(n, mean = 10, sd = 1.2) # H1 verdadeira (sd != 1)
+  if(teste_escore_sigma(dados_alt) >= 0.05){
+    nao_rejeicoes_alt <- nao_rejeicoes_alt + 1}}
+erro_tipo1 <- rejeicoes_norm / n_sim
+erro_tipo2 <- nao_rejeicoes_alt / n_sim
+cat("d) Normal (Teste Escore)\nTaxa de Erro Tipo I (alvo 0.05):", erro_tipo1,
+    "\nTaxa de Erro Tipo II:", erro_tipo2, "\n")
+
+# e) Tweedie: Teste Wald para Phi = 1
+# Configuração Tweedie
+mu <- 10; phi_0 <- 1; p <- 1.5
+# Função para teste Wald
+teste_wald_phi <- function(dados, p_known){
+  n <- length(dados)
+  mu_hat <- mean(dados)
+  # Estimativa de phi (baseada no Deviance ou Pearson)
+  # Usaremos Pearson para simplificar: Phi = sum((y-mu)^2 / mu^p) / (n-1)
+  phi_hat <- sum((dados - mu_hat)^2 / (mu_hat^p)) / (n - 1)
+  # Variância assintótica de phi_hat aprox 2*phi^2/n (para phi=1 sob H0)
+  var_phi <- 2 * (1^2) / n
+  wald_stat <- (phi_hat - 1)^2 / var_phi
+  p_val <- 1 - pchisq(wald_stat, df = 1)
+  return(c(phi_hat, p_val))}
+# Estudo de Simulação
+rejeicoes_tw <- 0
+phis_estimados <- numeric(n_sim)
+for(i in 1:n_sim){
+  # Gerar dados Tweedie (requer pacote tweedie)
+  dados_tw <- rtweedie(n, mu = mu, phi = phi_0, power = p)
+  res <- teste_wald_phi(dados_tw, p)
+  phis_estimados[i] <- res[1]
+  if(res[2] < 0.05) rejeicoes_tw <- rejeicoes_tw + 1}
+erro_tipo1_tw <- rejeicoes_tw / n_sim
+cat("e) Tweedie (Teste Wald)\nMédia Phi estimado:", mean(phis_estimados),
+    "\nTaxa de Erro Tipo I (Wald):", erro_tipo1_tw, "\n")
+```
+

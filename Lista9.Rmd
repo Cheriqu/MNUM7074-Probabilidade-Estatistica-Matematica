@@ -1,0 +1,295 @@
+## output: pdf\_document: default html\_document: df\_print: paged
+
+Para todas as distribuições, considere uma amostra aleatória $X_1, \dots, X_n$.
+
+### a) Distribuição Poisson ($\lambda$)
+
+**fmp:** $P(X=x) = \frac{e^{-\lambda}\lambda^x}{x!}$
+
+**EMV:**
+$$L(\lambda) = \prod \frac{e^{-\lambda}\lambda^{x_i}}{x_i!} = \frac{e^{-n\lambda}\lambda^{\sum x_i}}{\prod x_i!}$$
+$$l(\lambda) = -n\lambda + (\sum x_i)\ln\lambda - \ln(\prod x_i!)$$
+$$\frac{\partial l}{\partial \lambda} = -n + \frac{\sum x_i}{\lambda} = 0 \implies \hat{\lambda} = \bar{X}$$
+
+**Estratégias de IC:**
+
+1.  **Wald (Assintótico):** Baseado em $Var(\hat{\lambda}) \approx \hat{\lambda}/n$.
+    $$\hat{\lambda} \pm z_{\alpha/2} \sqrt{\frac{\hat{\lambda}}{n}}$$
+2.  **Exato (Qui-quadrado):** Baseado na relação entre Poisson e $\chi^2$. Seja $Y = \sum X_i$.
+    $$\left[ \frac{\chi^2_{\alpha/2, 2Y}}{2n}, \frac{\chi^2_{1-\alpha/2, 2(Y+1)}}{2n} \right]$$
+
+-----
+
+### b) Distribuição Binomial ($n, p$) - $n$ conhecido
+
+**fmp:** $P(X=k) = \binom{n}{k}p^k(1-p)^{n-k}$ (considerando $k$ sucessos em $n$ ensaios).
+
+**EMV:**
+$$l(p) = \ln \binom{n}{k} + k \ln p + (n-k) \ln (1-p)$$
+$$\frac{\partial l}{\partial p} = \frac{k}{p} - \frac{n-k}{1-p} = 0 \implies k(1-p) = p(n-k) \implies \hat{p} = \frac{k}{n}$$
+
+**Estratégias de IC:**
+
+1.  **Wald:**
+    $$\hat{p} \pm z_{\alpha/2} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$$
+2.  **Wilson Score:** (Mais robusto, especialmente para $p$ próximo de 0 ou 1).
+    $$\frac{\hat{p} + \frac{z^2}{2n} \pm z\sqrt{\frac{\hat{p}(1-\hat{p})}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$
+
+-----
+
+### c) Distribuição Exponencial ($\lambda$)
+
+**fdp:** $f(x) = \lambda e^{-\lambda x}$
+
+**EMV:**
+$$L(\lambda) = \lambda^n e^{-\lambda \sum x_i} \implies l(\lambda) = n \ln \lambda - \lambda \sum x_i$$
+$$\frac{\partial l}{\partial \lambda} = \frac{n}{\lambda} - \sum x_i = 0 \implies \hat{\lambda} = \frac{1}{\bar{X}}$$
+
+**Estratégias de IC:**
+
+1.  **Assintótico (Delta Method):** $Var(\hat{\lambda}) \approx \lambda^2/n$.
+    $$\hat{\lambda} \pm z_{\alpha/2} \frac{\hat{\lambda}}{\sqrt{n}}$$
+2.  **Exato:** A estatística $2\lambda \sum X_i \sim \chi^2_{2n}$.
+    $$\left[ \frac{\chi^2_{\alpha/2, 2n}}{2n\bar{X}}, \frac{\chi^2_{1-\alpha/2, 2n}}{2n\bar{X}} \right]$$
+
+-----
+
+### d) Distribuição Normal ($\mu, \sigma^2$)
+
+**fdp:** $f(x) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}$
+
+**EMV:**
+Derivando $l(\mu, \sigma^2)$ em relação a $\mu$ e $\sigma^2$:
+$$\hat{\mu} = \bar{X}$$
+$$\hat{\sigma}^2 = \frac{1}{n} \sum (X_i - \bar{X})^2$$
+
+**Estratégias de IC (para $\mu$):**
+
+1.  **Exato (t-Student):** (Usando variância amostral $S^2$).
+    $$\bar{X} \pm t_{n-1, \alpha/2} \frac{S}{\sqrt{n}}$$
+2.  **Z-Assintótico:** Assume-se variância conhecida ou grande amostra (usando o estimador de variância do EMV).
+    $$\bar{X} \pm z_{\alpha/2} \frac{\hat{\sigma}_{EMV}}{\sqrt{n}}$$
+
+-----
+
+### e) Distribuição Gama ($\alpha, \beta$) - parametrização forma/taxa
+
+**fdp:** $f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x}$
+
+**EMV:**
+Não possui forma fechada. Resolve-se o sistema não linear:
+
+1.  $\ln(\alpha) - \psi(\alpha) = \ln(\bar{X}) - \overline{\ln(X)}$ (Onde $\psi$ é a função digama)
+2.  $\hat{\beta} = \hat{\alpha} / \bar{X}$
+
+**Estratégias de IC:**
+
+1.  **Aproximação Normal Multivariada:** Inversão da Matriz de Informação de Fisher observada (Hessiana).
+    $$\hat{\theta} \pm z_{\alpha/2} SE(\hat{\theta})$$
+2.  **Razão de Verossimilhança (Perfilada):** Inversão do teste da razão de verossimilhança (Teorema de Wilks). O intervalo é o conjunto de $\theta$ tal que:
+    $$2[l(\hat{\theta}) - l(\theta)] \le \chi^2_{1, 1-\alpha}$$
+
+-----
+
+### f) Distribuição Log-Normal ($\mu, \sigma^2$)
+
+**Transformação:** Se $X \sim LogNormal$, então $Y = \ln(X) \sim N(\mu, \sigma^2)$.
+
+**EMV:**
+Aplica-se o EMV da normal nos dados logaritmizados:
+$$\hat{\mu} = \frac{1}{n} \sum \ln(X_i)$$
+$$\hat{\sigma}^2 = \frac{1}{n} \sum (\ln(X_i) - \hat{\mu})^2$$
+
+**Estratégias de IC (para a média $\mu$ da normal subjacente):**
+
+1.  **t-Student nos logs (Exato):** Usa a distribuição t.
+2.  **Z-Assintótico nos logs:** Usa a distribuição Normal padrão (para grandes amostras).
+    $$\hat{\mu} \pm z_{\alpha/2} \frac{S_{\ln}}{\sqrt{n}}$$
+
+-----
+
+### g) Distribuição Inversa Gaussiana ($\mu, \lambda$)
+
+**fdp:** $f(x) = \sqrt{\frac{\lambda}{2\pi x^3}} \exp\left( \frac{-\lambda(x-\mu)^2}{2\mu^2 x} \right)$
+
+**EMV:**
+$$\hat{\mu} = \bar{X}$$
+$$\hat{\lambda} = \frac{n}{\sum (\frac{1}{X_i} - \frac{1}{\bar{X}})}$$
+
+**Estratégias de IC (para $\mu$):**
+
+1.  **Wald (Assintótico):** Variância assintótica de $\hat{\mu}$ é $\mu^3 / (n\lambda)$.
+    $$\hat{\mu} \pm z_{\alpha/2} \sqrt{\frac{\hat{\mu}^3}{n\hat{\lambda}}}$$
+2.  **t-Student (Modificado):** Similar ao caso normal, usando a distribuição t para compensar a estimação da variância em amostras finitas.
+    $$\hat{\mu} \pm t_{n-1, \alpha/2} \sqrt{\frac{\hat{\mu}^3}{n\hat{\lambda}}}$$
+
+-----
+
+### h) Distribuição Tweedie ($\mu, \phi, p$) - $p$ conhecido
+
+Pertence à Família Exponencial de Dispersão. $E[Y] = \mu$, $Var(Y) = \phi \mu^p$.
+
+**EMV (para $\mu$):**
+A equação de score para a média em GLMs (Modelos Lineares Generalizados) depende apenas da função de ligação e variância.
+$$\sum \frac{(y_i - \mu)}{\phi \mu^p} = 0 \implies \hat{\mu} = \bar{X}$$
+
+**Estratégias de IC:**
+
+1.  **Assintótico (Wald Z):** Baseado na Normal.
+    $$\hat{\mu} \pm z_{\alpha/2} \sqrt{\hat{\phi}\hat{\mu}^p / n}$$
+2.  **t-Student (GLM):** Baseado na distribuição t, com $n-k$ graus de liberdade, mais apropriado quando a dispersão $\phi$ é estimada.
+    $$\hat{\mu} \pm t_{n-1, \alpha/2} \sqrt{\hat{\phi}\hat{\mu}^p / n}$$
+
+-----
+
+```{r,  message = FALSE, warning = FALSE}
+# Bibliotecas necessárias
+if(!require(MASS)) install.packages("MASS")
+if(!require(statmod)) install.packages("statmod")
+if(!require(tweedie)) install.packages("tweedie")
+
+set.seed(2025)
+alpha_conf <- 0.95
+z_score <- qnorm(1 - (1-alpha_conf)/2)
+
+# a) Poisson
+lambda_true <- 5; n <- 50
+x_pois <- rpois(n, lambda_true)
+
+emv_pois <- mean(x_pois)
+# IC 1: Wald
+se_pois <- sqrt(emv_pois/n)
+ic_wald_pois <- c(emv_pois - z_score*se_pois, emv_pois + z_score*se_pois)
+# IC 2: Exato
+ic_exact_pois <- poisson.test(sum(x_pois), T=n)$conf.int[1:2]
+
+cat("a) Poisson ( Lambda Real =", lambda_true, ")\nEMV:", emv_pois, 
+    "\nIC Wald:", ic_wald_pois, "\nIC Exato:", ic_exact_pois)
+
+# b) Binomial
+n_trials <- 100; p_true <- 0.4
+k_sucessos <- rbinom(1, n_trials, p_true)
+
+emv_p <- k_sucessos / n_trials
+# IC 1: Wald
+se_bin <- sqrt(emv_p * (1-emv_p) / n_trials)
+ic_wald_bin <- c(emv_p - z_score*se_bin, emv_p + z_score*se_bin)
+# IC 2: Wilson
+ic_wilson <- prop.test(k_sucessos, n_trials, conf.level=alpha_conf)$conf.int[1:2]
+
+cat("b) Binomial ( p Real =", p_true, ")\nEMV:", emv_p, 
+    "\nIC Wald:", ic_wald_bin, "\nIC Wilson:", ic_wilson)
+
+# c) Exponencial
+lambda_exp_true <- 2; n <- 50
+x_exp <- rexp(n, lambda_exp_true)
+
+emv_exp <- 1/mean(x_exp)
+# IC 1: Assintótico
+se_exp <- emv_exp / sqrt(n)
+ic_asy_exp <- c(emv_exp - z_score*se_exp, emv_exp + z_score*se_exp)
+# IC 2: Exato
+ic_exact_exp <- c(qchisq(0.025, 2*n)/(2*n*mean(x_exp)), 
+                  qchisq(0.975, 2*n)/(2*n*mean(x_exp)))
+
+cat("c) Exponencial ( Lambda Real =", lambda_exp_true, ")
+    \nEMV:", emv_exp, "\nIC Assintótico:", ic_asy_exp, "\nIC Exato:", ic_exact_exp)
+
+# d) Normal (para mu)
+mu_true <- 10; sigma_true <- 2; n <- 50
+x_norm <- rnorm(n, mu_true, sigma_true)
+
+emv_mu <- mean(x_norm)
+# IC 1: t-Student (Exato)
+ic_t <- t.test(x_norm, conf.level=alpha_conf)$conf.int[1:2]
+
+# IC 2: Z-Assintótico (usando SD do EMV)
+sd_emv <- sqrt(sum((x_norm - mean(x_norm))^2)/n) # Desvio padrão do EMV (viesado)
+ic_z <- c(emv_mu - z_score * (sd_emv/sqrt(n)), 
+          emv_mu + z_score * (sd_emv/sqrt(n)))
+
+cat("d) Normal ( Mu Real =", mu_true, ")\nEMV:", emv_mu, "
+    \nIC t-Student:", ic_t, "\nIC Z-Assintótico:", ic_z)
+
+# e) Gama
+shape_true <- 2; rate_true <- 1; n <- 100
+x_gamma <- rgamma(n, shape=shape_true, rate=rate_true)
+
+fit_gamma <- fitdistr(x_gamma, "gamma")
+emv_gamma <- fit_gamma$estimate
+# IC 1: Assintótico (Hessiana/Wald)
+se_gamma <- fit_gamma$sd
+ic_asy_gamma <- emv_gamma[1] + c(-1,1)*z_score*se_gamma[1]
+
+# IC 2: Razão de Verossimilhança (Perfilada) para o parâmetro 'shape'
+# Função de log-verossimilhança perfilada para alpha (shape)
+loglik_profile <- function(alpha, data) {
+  beta_hat <- alpha / mean(data) # EMV de beta dado alpha
+  sum(dgamma(data, shape = alpha, rate = beta_hat, log = TRUE))
+}
+max_loglik <- fit_gamma$loglik
+cutoff <- max_loglik - qchisq(0.95, 1)/2
+# Encontrar raízes onde logL(theta) = logL(hat) - chi/2
+lower_prof <- uniroot(function(a) loglik_profile(a, x_gamma) - cutoff, 
+                      c(0.1, emv_gamma[1]))$root
+upper_prof <- uniroot(function(a) loglik_profile(a, x_gamma) - cutoff, 
+                      c(emv_gamma[1], 10))$root
+ic_profile <- c(lower_prof, upper_prof)
+
+cat("e) Gama ( Shape Real =", shape_true, ")
+    \nEMV Shape:", emv_gamma[1], "\nIC Assintótico (Wald):", ic_asy_gamma, 
+    "\nIC Razão de Verossimilhança:", ic_profile)
+
+# f) Log-Normal (para mu log)
+meanlog_true <- 1; n <- 100
+x_lnorm <- rlnorm(n, meanlog=meanlog_true, sdlog=0.5)
+log_x <- log(x_lnorm)
+
+emv_mulog <- mean(log_x)
+# IC 1: t-Student nos logs
+ic_t_log <- t.test(log_x)$conf.int[1:2]
+
+# IC 2: Z-Assintótico nos logs (para n grande)
+se_log <- sd(log_x) / sqrt(n)
+ic_z_log <- c(emv_mulog - z_score*se_log, emv_mulog + z_score*se_log)
+
+cat("f) Log-Normal ( Mu Log Real =", meanlog_true, ")
+    \nEMV:", emv_mulog, "\nIC t (logs):", ic_t_log, "\nIC Z-Assintótico:", ic_z_log)
+
+# g) Inversa Gaussiana
+mu_ig_true <- 5; lambda_ig_true <- 2; n <- 100
+x_ig <- rinvgauss(n, mean=mu_ig_true, shape=lambda_ig_true)
+
+emv_mu_ig <- mean(x_ig)
+emv_lambda_ig <- n / sum(1/x_ig - 1/emv_mu_ig)
+# IC 1: Wald
+var_mu_ig <- emv_mu_ig^3 / (n * emv_lambda_ig)
+ic_wald_ig <- c(emv_mu_ig - z_score*sqrt(var_mu_ig), 
+                emv_mu_ig + z_score*sqrt(var_mu_ig))
+# IC 2: t-Student (Modificado)
+t_score <- qt(1 - (1-alpha_conf)/2, df = n-1)
+ic_t_ig <- c(emv_mu_ig - t_score*sqrt(var_mu_ig), 
+             emv_mu_ig + t_score*sqrt(var_mu_ig))
+
+cat("g) Inversa Gaussiana ( Mu Real =", mu_ig_true, ")
+    \nEMV:", emv_mu_ig, "\nIC Wald:", ic_wald_ig, "\nIC t-Student:", ic_t_ig)
+
+# h) Tweedie (p=1.5)
+mu_tw_true <- 10; n <- 100
+x_tw <- rtweedie(n, mu=mu_tw_true, phi=2, power=1.5)
+
+emv_mu_tw <- mean(x_tw)
+# Estimativa Phi (Momentos)
+phi_hat <- var(x_tw) / (emv_mu_tw^1.5)
+
+# IC 1: Assintótico GLM (Wald Z)
+se_tw <- sqrt(phi_hat * emv_mu_tw^1.5 / n)
+ic_glm_z <- c(emv_mu_tw - z_score*se_tw, emv_mu_tw + z_score*se_tw)
+
+# IC 2: t-Student GLM
+t_score_tw <- qt(1 - (1-alpha_conf)/2, df = n-1)
+ic_glm_t <- c(emv_mu_tw - t_score_tw*se_tw, emv_mu_tw + t_score_tw*se_tw)
+
+cat("h) Tweedie ( Mu Real =", mu_tw_true, ")
+    \nEMV:", emv_mu_tw, "\nIC Wald (Z):", ic_glm_z, "\nIC t-Student:", ic_glm_t)
+```

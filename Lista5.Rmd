@@ -1,0 +1,107 @@
+---
+output: pdf_document
+---
+
+## 6)a) Distribuição t de Student ($Y \sim t_{20}$)
+
+```{r t_dist_prob}
+df_t <- 20
+p_t_intervalo <- pt(2.85, df = df_t) - pt(-2.85, df = df_t)
+p_t_menor_neg <- pt(-2.85, df = df_t)
+p_t_maior_pos <- pt(2.85, df = df_t, lower.tail = FALSE)
+p_t_maior_2 <- pt(2.12, df = df_t, lower.tail = FALSE)
+p_t_menor_neg_2 <- pt(-3.01, df = df_t)
+cat("Resultados para Y ~ t(20):",
+    sprintf("P(-2.85 <= Y <= 2.85) = %f", p_t_intervalo),
+    sprintf("P(Y < -2.85) = %f", p_t_menor_neg),
+    sprintf("P(Y > 2.85) = %f", p_t_maior_pos),
+    sprintf("P(Y > 2.12) = %f", p_t_maior_2),
+    sprintf("P(Y < -3.01) = %f", p_t_menor_neg_2),
+    sep = "\n")
+```
+
+## b) Distribuição Qui-quadrado ($Y \sim \chi^2_{16}$)
+
+```{r chi2_dist_prob}
+df_chi2 <- 16
+p_chi2_intervalo <- pchisq(32.85, df = df_chi2) - pchisq(8.91, df = df_chi2)
+p_chi2_maior_1 <- pchisq(8.91, df = df_chi2, lower.tail = FALSE)
+p_chi2_maior_2 <- pchisq(32.85, df = df_chi2, lower.tail = FALSE)
+p_chi2_maior_3 <- pchisq(22.80, df = df_chi2, lower.tail = FALSE)
+p_chi2_menor <- pchisq(10.12, df = df_chi2)
+cat("Resultados para Y ~ Chi-quadrado(16):",
+    sprintf("P(8.91 < Y < 32.85) = %f", p_chi2_intervalo),
+    sprintf("P(Y > 8.91) = %f", p_chi2_maior_1),
+    sprintf("P(Y > 32.85) = %f", p_chi2_maior_2),
+    sprintf("P(Y > 22.80) = %f", p_chi2_maior_3),
+    sprintf("P(Y < 10.12) = %f", p_chi2_menor),
+    sep = "\n")
+```
+
+## c) Distribuição F ($Y \sim F_{(10,7)}$)
+
+```{r f_dist_prob}
+df1_f <- 10
+df2_f <- 7
+p_f_maior_1 <- pf(3.18, df1 = df1_f, df2 = df2_f, lower.tail = FALSE)
+p_f_maior_2 <- pf(0.15, df1 = df1_f, df2 = df2_f, lower.tail = FALSE)
+p_f_maior_3 <- pf(5.35, df1 = df1_f, df2 = df2_f, lower.tail = FALSE)
+p_f_menor_1 <- pf(7.41, df1 = df1_f, df2 = df2_f)
+p_f_menor_2 <- pf(1, df1 = df1_f, df2 = df2_f)
+cat("Resultados para Y ~ F(10, 7):",
+    sprintf("P(Y > 3.18) = %f", p_f_maior_1),
+    sprintf("P(Y > 0.15) = %f", p_f_maior_2),
+    sprintf("P(Y > 5.35) = %f", p_f_maior_3),
+    sprintf("P(Y < 7.41) = %f", p_f_menor_1),
+    sprintf("P(Y < 1) = %f", p_f_menor_2),
+    sep = "\n")
+```
+
+## 7)a) Distribuição t de Student ($Y \sim t_{20}$)
+
+```{r t_dist_quant}
+df_t <- 20
+y_a <- qt(0.90, df = df_t)
+y_b <- qt(0.025, df = df_t)
+y_c <- qt(0.01, df = df_t)
+y_d <- qt(0.025, df = df_t)
+cat("Valores de y para Y ~ t(20):",
+    sprintf("a) P(Y < y) = 0.90  =>  y = %f", y_a),
+    sprintf("b) P(Y < y) = 0.025  =>  y = %f", y_b),
+    sprintf("c) P(Y < y) = 0.01   =>  y = %f", y_c),
+    sprintf("d) P(Y > y) = 0.975  =>  y = %f", y_d),
+    sep = "\n")
+```
+
+## b) Distribuição Qui-quadrado ($Y \sim \chi^2_{16}$)
+
+```{r chi2_dist_quant}
+df_chi2 <- 16
+y_a <- qchisq(0.90, df = df_chi2)
+y_b <- qchisq(0.025, df = df_chi2)
+y_c <- qchisq(0.01, df = df_chi2)
+y_d <- qchisq(0.025, df = df_chi2)
+cat("Valores de y para Y ~ Chi-quadrado(16):",
+    sprintf("a) P(Y < y) = 0.90  =>  y = %f", y_a),
+    sprintf("b) P(Y < y) = 0.025  =>  y = %f", y_b),
+    sprintf("c) P(Y < y) = 0.01   =>  y = %f", y_c),
+    sprintf("d) P(Y > y) = 0.975  =>  y = %f", y_d),
+    sep = "\n")
+```
+
+## c) Distribuição F ($Y \sim F_{(10,7)}$)
+
+```{r f_dist_quant}
+df1_f <- 10
+df2_f <- 7
+y_a <- qf(0.90, df1 = df1_f, df2 = df2_f)
+y_b <- qf(0.025, df1 = df1_f, df2 = df2_f)
+y_c <- qf(0.01, df1 = df1_f, df2 = df2_f)
+y_d <- qf(0.025, df1 = df1_f, df2 = df2_f)
+cat("Valores de y para Y ~ F(10, 7):",
+    sprintf("a) P(Y < y) = 0.90  =>  y = %f", y_a),
+    sprintf("b) P(Y < y) = 0.025  =>  y = %f", y_b),
+    sprintf("c) P(Y < y) = 0.01   =>  y = %f", y_c),
+    sprintf("d) P(Y > y) = 0.975  =>  y = %f", y_d),
+    sep = "\n")
+```
